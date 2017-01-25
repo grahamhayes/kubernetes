@@ -74,16 +74,17 @@ type LoadBalancer struct {
 }
 
 type LoadBalancerOpts struct {
-	LBVersion            string     `gcfg:"lb-version"` // overrides autodetection. v1 or v2
-	SubnetId             string     `gcfg:"subnet-id"`  // required
-	FloatingNetworkId    string     `gcfg:"floating-network-id"`
-	LBMethod             string     `gcfg:"lb-method"`
-	CreateMonitor        bool       `gcfg:"create-monitor"`
-	MonitorDelay         MyDuration `gcfg:"monitor-delay"`
-	MonitorTimeout       MyDuration `gcfg:"monitor-timeout"`
-	MonitorMaxRetries    uint       `gcfg:"monitor-max-retries"`
-	ManageSecurityGroups bool       `gcfg:"manage-security-groups"`
-	NodeSecurityGroupID  string     `gcfg:"node-security-group"`
+	LBVersion                    string     `gcfg:"lb-version"` // overrides autodetection. v1 or v2
+	SubnetId                     string     `gcfg:"subnet-id"`  // required
+	FloatingNetworkId            string     `gcfg:"floating-network-id"`
+	LBMethod                     string     `gcfg:"lb-method"`
+	CreateMonitor                bool       `gcfg:"create-monitor"`
+	MonitorDelay                 MyDuration `gcfg:"monitor-delay"`
+	MonitorTimeout               MyDuration `gcfg:"monitor-timeout"`
+	MonitorMaxRetries            uint       `gcfg:"monitor-max-retries"`
+	ManageSecurityGroups         bool       `gcfg:"manage-security-groups"`
+	NodeSecurityGroupID          string     `gcfg:"node-security-group"`
+	AllowAllTrafficFromVIPSubnet bool       `gcfg:"allow-all-traffic-from-vip-subnet"`
 }
 
 type BlockStorageOpts struct {
@@ -451,6 +452,11 @@ func (os *OpenStack) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
 func isNotFound(err error) bool {
 	e, ok := err.(*gophercloud.UnexpectedResponseCodeError)
 	return ok && e.Actual == http.StatusNotFound
+}
+
+func isDuplicate(err error) bool {
+	e, ok := err.(*gophercloud.UnexpectedResponseCodeError)
+	return ok && e.Actual == http.StatusConflict
 }
 
 func (os *OpenStack) Zones() (cloudprovider.Zones, bool) {
